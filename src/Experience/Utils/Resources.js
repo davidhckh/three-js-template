@@ -28,7 +28,7 @@ export default class Resources extends EventEmitter
 
     startLoading()
     {
-        // Load each source
+        /**load each source */
         for(const source of this.sources)
         {
             if(source.type === 'gltfModel')
@@ -70,6 +70,7 @@ export default class Resources extends EventEmitter
 
         this.loaded++
 
+        /**Trigger Event Emitter if all sources are loaded */
         if(this.loaded === this.toLoad)
         {
             this.trigger('ready')

@@ -21,7 +21,7 @@ export default class Renderer
             antialias: true
         })
         
-        this.instance.setClearColor('#ffffff', 1)
+        this.instance.setClearColor('#262626', 1)
         this.instance.physicallyCorrectLights = true
         // this.instance.gammaOutPut = true
         this.instance.outputEncoding = THREE.sRGBEncoding

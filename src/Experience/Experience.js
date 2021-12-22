@@ -7,29 +7,27 @@ import Camera from './Camera.js'
 import Renderer from './Renderer.js'
 import World from './World/World.js'
 import Resources from './Utils/Resources.js'
+import Stats from './Utils/Stats.js'
 
 import sources from './sources.js'
 
 let instance = null
 
-export default class Experience
-{
-    constructor(_canvas)
-    {
+export default class Experience {
+    constructor(_canvas) {
         /**Singleton */
-        if(instance)
-        {
+        if (instance) {
             return instance
         }
         instance = this
-        
+
         /**Global Access */
         window.experience = this
 
-        // Options
+        /**Canvas*/
         this.canvas = _canvas
 
-        // Setup
+        /**Setup Classes */
         this.debug = new Debug()
         this.sizes = new Sizes()
         this.time = new Time()
@@ -38,54 +36,56 @@ export default class Experience
         this.camera = new Camera()
         this.renderer = new Renderer()
         this.world = new World()
+        this.stats = new Stats()
 
-        // Resize event
-        this.sizes.on('resize', () =>
-        {
+        /**Event Emitter Listeners */
+        this.sizes.on('resize', () => {
             this.resize()
         })
 
-        // Time tick event
-        this.time.on('tick', () =>
-        {
+        this.time.on('tick', () => {
             this.update()
         })
     }
 
-    resize()
-    {
+    resize() {
         this.camera.resize()
         this.renderer.resize()
     }
 
-    update()
-    {
+    update() {
+        /**Begin analyzing frame */
+        if (this.stats.active) {
+            this.stats.beforeRender()
+        }
+
+        /**update everything */
         this.camera.update()
         this.world.update()
         this.renderer.update()
+
+        /**Finish analyzing frame */
+        if (this.stats.active) {
+            this.stats.afterRender()
+        }
     }
 
-    destroy()
-    {
+    destroy() {
+        /**Clear Event Emitter*/
         this.sizes.off('resize')
         this.time.off('tick')
 
-        // Traverse the whole scene
-        this.scene.traverse((child) =>
-        {
-            // Test if it's a mesh
-            if(child instanceof THREE.Mesh)
-            {
+        /**Traverse the whole scene and check if it's a mesh */
+        this.scene.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
                 child.geometry.dispose()
 
-                // Loop through the material properties
-                for(const key in child.material)
-                {
+                /**Loop through the material properties */
+                for (const key in child.material) {
                     const value = child.material[key]
 
-                    // Test if there is a dispose function
-                    if(value && typeof value.dispose === 'function')
-                    {
+                    /**Test if there is a dispose function */
+                    if (value && typeof value.dispose === 'function') {
                         value.dispose()
                     }
                 }
@@ -95,7 +95,12 @@ export default class Experience
         this.camera.controls.dispose()
         this.renderer.instance.dispose()
 
-        if(this.debug.active)
+        if (this.debug.active) {
             this.debug.ui.destroy()
+        }
+
+        if(this.stats.active) {
+            this.stats.ui.destroy()
+        }
     }
 }
